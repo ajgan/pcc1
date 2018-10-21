@@ -348,6 +348,31 @@ char* treat(char *txt) {
     return txt;
 }
 
+void showhelp() {
+    string my_val = "Formato de comando:\n"
+    "./pmt [options] pattern textfile [textfile...]\n"
+    "Flags de opção:\n"
+    "-c ou --count\n"
+    "    Exibe contagem de ocorrências do padrão no texto(por default, não se exibe)\n"
+    "-e ou --edit emax\n"
+    "    Valor de edit máximo para algoritmos de busca aproximada(por default, é zero)\n"
+    " -a ou --algorithm algorithmname\n"
+    "     Algoritmo de busca desejado(por default, a escolha do algoritmo segue uma heurística interna)\n"
+    "     lista de algoritmos:\n"
+    "         brt (Brute Force)\n"
+    "         kmp (KMP)\n"
+    "         aho (Aho-Corasick)\n"
+    "         sel (Sellers)\n"
+    "         ukk (Ukkonen)\n"
+    " -p ou --pattern patternfile\n"
+    "     Indica que os padrões devem vir de um arquivo patternfile\n"
+    " -h ou --help\n"
+    "     Exibe informações básicas da ferramenta\n"
+    " -t ou --time\n"
+    "     Exibe o tempo gasto com a execução do programa(por default, não se exibe)\n";
+    cout << my_val << "\n";
+}
+
 
 int main(int argc, char** argv) {
 
@@ -378,6 +403,7 @@ int main(int argc, char** argv) {
 
     //bool pra indicar que o padrão já foi identificado no comando(padrão sempre vem antes do arquivo)
     bool patflag = 0;
+    bool fileflag = 0;
     //bool que indica se o padrão virá de uma file
     bool patfile = 0;
     char *patpath;
@@ -427,8 +453,8 @@ int main(int argc, char** argv) {
         }
         if ((strncmp(argv[i],"-h",256) == 0) || (strncmp(argv[i],"--help",256) == 0)) {
             //implementar
-            cout << "help" << "\n";
-            markedPos[i] = 1;
+            showhelp();
+            return 0;
         }
         if ((strncmp(argv[i],"-t",256) == 0) || (strncmp(argv[i],"--time",256) == 0)) {
             printTime = 1;
@@ -445,9 +471,16 @@ int main(int argc, char** argv) {
             mypats.push_back(argv[j]);
         }
         if((markedPos[j] == 0) && (patflag == 1)) {
+            fileflag = 1;
             files.push_back(argv[j]);
             markedPos[j]  = 1;
         }
+    }
+
+    if ((patflag == 0) || (fileflag == 0)) {
+        cout << "Invalid Command" << "\n";
+        showhelp();
+        return 0;
     }
 
     // flag de impressão de linhas
