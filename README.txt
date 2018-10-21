@@ -1,9 +1,9 @@
 Ferramenta pmt de busca de padrões.
 
-Implementada por Antonio Gadelha(ajgan) e Gabriel Melo(gvms) como Projeto 1 para a disciplina de Processamento de Cadeias de Caracteres(if767) do CIn-UFPE.
+Implementada por Antonio Gadelha(ajgan) e Gabriel Melo(gvmgs) como Projeto 1 para a disciplina de Processamento de Cadeias de Caracteres(if767) do CIn-UFPE.
 
 Antonio implementou os algoritmos Brute Force, KMP e Sellers. Fez também a parte da leitura das flags da linha de comando.
-Gabriel implementou o Aho-Corasick simples e o aproximado.
+Gabriel implementou os algoritmos Aho-Corasick e Ukkonen.
 Ambos contribuíram com a documentação e com os testes.
 
 Para compilar o projeto, basta dar o comando:
@@ -19,7 +19,7 @@ Para busca exata:
     - Aho-Corasick
 Para busca por proximidade:
     - Sellers
-    - Aho-Corasick Aproximado
+    - Ukkonen
 
 As flags de linha de comando implementadas foram:
     -c ou --count
@@ -29,11 +29,11 @@ As flags de linha de comando implementadas foram:
     -a ou --algorithm algorithmname
         Flag para explicitar qual algoritmo de busca o usuário deseja utilizar(por default, a escolha do algoritmo segue uma heurística que será explicada posteriormente)
         lista de algoritmos:
-            - brute (Brute Force)
+            - brt (Brute Force)
             - kmp (KMP)
             - aho (Aho-Corasick)
-            - sellers (Sellers)
-            - aproxaho (Aho-Corasick Aproximado)
+            - sel (Sellers)
+            - ukk (Ukkonen)
     -p ou --pattern patternfile
         Flag para indicar que os padrões devem vir de um arquivo(por default, o padrão é um só e é digitado pelo usuário)
     -h ou --help

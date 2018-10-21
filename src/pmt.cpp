@@ -147,11 +147,15 @@ int brute (char* pat, char* txt, int cont, bool printLine) {
     bool linePrinted = !printLine;
 
     for (int i = 0; i < n; i++) {
+        int match = 0;
         for (int j = 0; j < m; j++) {
-            if (pat[j] != txt[i]) {
+            if (pat[j] == txt[i+match]) {
+                match++;
+            }
+            else {
                 break;
             }
-            if(j == m-1) {
+            if(match == m) {
                 cont ++;
                 if(!linePrinted) {
                     //imprime linha
@@ -287,8 +291,11 @@ int main(int argc, char** argv) {
                     if (strncmp(alg,"kmp",256) == 0) {
                         cont = kmp(newpat, txt, cont, printLine);
                     }
-                    else if (strncmp(alg,"sellers",256) == 0) {
+                    else if (strncmp(alg,"sel",256) == 0) {
                         cont = sellers(newpat, txt, cont, err, printLine);
+                    }
+                    else if (strncmp(alg,"brt",256) == 0) {
+                        cont = brute(pat, txt, cont, printLine);
                     }
                     else {
                         cont = sellers(newpat, txt, cont, 0, printLine);
@@ -306,8 +313,11 @@ int main(int argc, char** argv) {
                 if (strncmp(alg,"kmp",256) == 0) {
                     cont = kmp(pat, txt, cont, printLine);
                 }
-                else if (strncmp(alg,"sellers",256) == 0) {
+                else if (strncmp(alg,"sel",256) == 0) {
                     cont = sellers(pat, txt, cont, err, printLine);
+                }
+                else if (strncmp(alg,"brt",256) == 0) {
+                    cont = brute(pat, txt, cont, printLine);
                 }
                 else {
                     cont = sellers(pat, txt, cont, 0, printLine);
