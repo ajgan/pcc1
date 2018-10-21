@@ -38,8 +38,6 @@ As flags de linha de comando implementadas foram:
         Flag para indicar que os padrões devem vir de um arquivo(por default, o padrão é um só e é digitado pelo usuário)
     -h ou --help
         Flag que exibe informações básicas do programa ao usuário
-    -s ou --skip
-        Flag para indicar que o usuário não deseja imprimir as linhas onde deu match(por default, as linhas são imprimidas)
     -t ou --time
         Flag que exibe ao final o tempo gasto com a execução do programa(por default, não se exibe)
 

@@ -346,6 +346,7 @@ int main(int argc, char** argv) {
     vector <string> mypats;         // padrões
     vector <char> alphabet;     // alfabeto ASC
     vector < vector <int> > occ;
+    vector <string> files;
     string pats;
 
     for(char symbol = 0; symbol < 127; symbol++){
@@ -358,16 +359,12 @@ int main(int argc, char** argv) {
     int err = 0;
     // contador de matches
     int cont = 0;
-    // flag de impressão de linhas
-    bool printLine = 1;
     // flag de impessão do tempo
     bool printTime = 0;
 
     // bool para indicar se existe flag de algoritmo
     bool hasAlg = 0;
     char* alg;
-
-    char *file;
 
     //bool pra indicar que o padrão já foi identificado no comando(padrão sempre vem antes do arquivo)
     bool patflag = 0;
@@ -423,12 +420,6 @@ int main(int argc, char** argv) {
             cout << "help" << "\n";
             markedPos[i] = 1;
         }
-        if ((strncmp(argv[i],"-s",256) == 0) || (strncmp(argv[i],"--skip",256) == 0)) {
-            // não imprime linhas
-            printLine = 0;
-            // diz que essa posição dos args já foi identificada
-            markedPos[i] = 1;
-        }
         if ((strncmp(argv[i],"-t",256) == 0) || (strncmp(argv[i],"--time",256) == 0)) {
             printTime = 1;
             markedPos[i] = 1;
@@ -444,10 +435,13 @@ int main(int argc, char** argv) {
             mypats.push_back(argv[j]);
         }
         if((markedPos[j] == 0) && (patflag == 1)) {
-            file = argv[j];
+            files.push_back(argv[j]);
             markedPos[j]  = 1;
         }
     }
+
+    // flag de impressão de linhas
+    bool printLine = !printCont;
 
     if (patfile == 1) {
         //abrir arquivo de padrões
@@ -459,50 +453,51 @@ int main(int argc, char** argv) {
 
     Out_goto t = build_go_to(mypats, alphabet);
     Out_fail fsm = build_fsm(mypats, alphabet);
-
     //abrir o arquivo
-    ifstream src(file);
 
-    string line;
-    while (getline(src, line)) {// percorre linha por linha
-        //converter a linha para char*
-        char *txt = &line[0u];
-        int prevCont = cont;
+    for (int i = 0; i < files.size(); i++) {
+        ifstream src(files[i]);
+        string line;
+        while (getline(src, line)) {// percorre linha por linha
+            //converter a linha para char*
+            char *txt = &line[0u];
+            int prevCont = cont;
 
-        for (int i = 0; i < mypats.size(); i++) {
-            char *newpat = &mypats[i][0u];
-            if(hasAlg) {
-                if (strncmp(alg,"kmp",256) == 0) {
-                    cont = kmp(newpat, txt, cont);
-                }
-                else if (strncmp(alg,"sel",256) == 0) {
-                    cont = sellers(newpat, txt, cont, err);
-                }
-                else if (strncmp(alg,"brt",256) == 0) {
-                    cont = brute(newpat, txt, cont);
-                }
-                else if (strncmp(alg,"aho",256) == 0) {
-                    occ = ahocorasick(txt, mypats, alphabet, fsm);
-
-                    for(int j = 0; j < occ.size(); j++){
-                        cont += occ[j].size();
+            for (int j = 0; j < mypats.size(); j++) {
+                char *newpat = &mypats[j][0u];
+                if(hasAlg) {
+                    if (strncmp(alg,"kmp",256) == 0) {
+                        cont = kmp(newpat, txt, cont);
                     }
+                    else if (strncmp(alg,"sel",256) == 0) {
+                        cont = sellers(newpat, txt, cont, err);
+                    }
+                    else if (strncmp(alg,"brt",256) == 0) {
+                        cont = brute(newpat, txt, cont);
+                    }
+                    else if (strncmp(alg,"aho",256) == 0) {
+                        occ = ahocorasick(txt, mypats, alphabet, fsm);
 
-                    break;
+                        for(int k = 0; k < occ.size(); k++){
+                            cont += occ[k].size();
+                        }
+
+                        break;
+                    }
+                    else {
+                        cont = sellers(newpat, txt, cont, err);
+                    }
                 }
                 else {
                     cont = sellers(newpat, txt, cont, err);
                 }
             }
-            else {
-                cont = sellers(newpat, txt, cont, err);
+
+            if ((cont - prevCont > 0) && printLine) {
+                cout << txt << "\n";
             }
-        }
 
-        if ((cont - prevCont > 0) && printLine) {
-            cout << txt << "\n";
         }
-
     }
 
     if (printCont) {
