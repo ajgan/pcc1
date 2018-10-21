@@ -338,6 +338,16 @@ int brute (char* pat, char* txt, int cont) {
 
 }
 
+char* treat(char *txt) {
+    int n = strlen(txt);
+    for (int i = 0; i < n; i++) {
+        if(int(txt[i]) < 0) {
+            txt[i] = ' ';
+        }
+    }
+    return txt;
+}
+
 
 int main(int argc, char** argv) {
 
@@ -462,6 +472,7 @@ int main(int argc, char** argv) {
             //converter a linha para char*
             char *txt = &line[0u];
             int prevCont = cont;
+            // cout << txt << "\n";
 
             for (int j = 0; j < mypats.size(); j++) {
                 char *newpat = &mypats[j][0u];
@@ -476,6 +487,8 @@ int main(int argc, char** argv) {
                         cont = brute(newpat, txt, cont);
                     }
                     else if (strncmp(alg,"aho",256) == 0) {
+                        txt = treat(txt);
+                        // cout << txt << "\n";
                         occ = ahocorasick(txt, mypats, alphabet, fsm);
 
                         for(int k = 0; k < occ.size(); k++){
