@@ -41,7 +41,7 @@ As flags de linha de comando implementadas foram:
     -t ou --time
         Flag que exibe ao final o tempo gasto com a execução do programa(por default, não se exibe)
 
-As flags -s e -t foram opções que a equipe julgou como interessantes, mas não estavam no escopo das especificações do projeto
+A flag -t foi uma opção que a equipe julgou como interessante, mas não estava no escopo das especificações do projeto
 
 Como citado anteriormente, caso o usuário não informe qual algoritmo ele deseja executar, o programa segue uma heurística obtida através de experimentações.
 A heurística se dá da seguinte forma:
