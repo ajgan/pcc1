@@ -1,6 +1,199 @@
+using namespace std;
+#include <cstring>
+#include <stdlib.h>
+#include <stdio.h>
 #include <iostream>
 #include <fstream>
-using namespace std;
+#include <vector>
+#include <string>
+
+#define MAXSTATES 1000
+#define MAXP 100
+#define ASCLEN 127
+
+int g [MAXSTATES][ASCLEN];
+
+void print_alphabet(vector <char> alphabet){
+    for(int i = 0; i<alphabet.size(); i++){
+        cout << alphabet[i] << endl;
+    }
+}
+
+struct Out_goto{
+    int nxt;
+    //int g [MAXSTATES][ASCLEN];
+    vector < vector <int> > o;
+};
+
+struct Out_fail{
+    vector <int> f;
+    vector < vector <int> > o;
+};
+
+
+//-------------- Build Goto --------------------------------------------------------------
+
+Out_goto build_go_to(vector <string> ps, vector <char> alphabet){
+    //int g [MAXSTATES][ASCLEN];
+    memset(g, -1, sizeof g);
+
+    vector <vector <int> > o (MAXSTATES, vector<int> (0));
+    int nxt = 0;
+
+    for(int k = 0; k < ps.size(); k++){
+        string pk = ps[k];
+        int m = pk.size();
+        int current = 0;
+        int j = 0;
+
+        while(j < m && g[current][pk[j]] != -1){
+            current = g[current][pk[j]];
+            j++;
+        }
+        while(j < m){
+            nxt++;
+            g[current][pk[j]] = nxt;
+            current = nxt;
+            j++;
+        }
+        //cout << " Current " << current << " " << k;
+        o[current].push_back(k);
+    }
+
+    // cout << endl;
+
+    for(int i = 0; i < alphabet.size(); i++){
+        if(g[0][alphabet[i]] == -1){
+            g[0][alphabet[i]] = 0;
+        }
+    }
+
+
+    /*for(int i = 0; i < o.size(); i++){
+        for(int j = 0; j < o[i].size(); j++){
+            cout << o[i][j] << " ";
+        }
+        cout << endl;
+    }*/
+
+    Out_goto gt;
+    gt.nxt = nxt + 1;
+    gt.o = o;
+    // gt.g = &g;
+    return gt;
+}
+//-----------------------------------------------------------------------------------------
+
+//-------------- Build Fail ---------------------------------------------------------------
+
+Out_fail build_fail(vector <string> ps, vector <char> alphabet, int n, vector < vector<int> > o){
+    vector <int> q;
+    vector <int> f (n);
+    int aux = 0;
+
+    for (int i = 0; i < alphabet.size(); i++){
+        if( g[0][alphabet[i]] != 0){
+            q.push_back(g[0][alphabet[i]]);
+            f[g[0][alphabet[i]]] = 0;
+        }
+    }
+
+    while(q.size() > aux){
+        int current = q[aux];
+        aux++;
+
+        for(int i = 0; i < alphabet.size(); i++){
+            if(g[current][alphabet[i]] != -1){
+                int nxt = g[current][alphabet[i]];
+                q.push_back(nxt);
+                int brd = f[current];
+                while(g[brd][alphabet[i]] == -1){
+                    brd = f[brd];
+                }
+                f[nxt] = g[brd][alphabet[i]];
+                for(int k = 0; k<o[f[nxt]].size(); k++){
+                    o[nxt].push_back(o[f[nxt]][k]);
+                }
+            }
+        }
+    }
+
+    Out_fail s;
+    s.f = f;
+    s.o = o;
+    return s;
+}
+
+//-----------------------------------------------------------------------------------------
+
+//------------------- Build Finite State Machine ------------------------------------------
+
+Out_fail build_fsm(vector <string> ps, vector <char> alphabet){
+    Out_goto gt = build_go_to(ps, alphabet);
+    Out_fail fsm = build_fail(ps, alphabet, gt.nxt, gt.o);
+
+    return fsm;
+}
+//-----------------------------------------------------------------------------------------
+
+//---------------------- Aho-Corasick Algorithm -------------------------------------------
+
+vector < vector <int> > ahocorasick(string txt, vector <string> ps, vector <char> alphabet){
+    int n = txt.size();
+    vector <int> m (ps.size());
+    Out_fail fsm = build_fsm(ps, alphabet);
+    int current = 0;
+    vector < vector <int> > occ (ps.size(), vector <int> (0));
+
+    for(int i = 0; i<ps.size(); i++){
+        m.push_back(ps[i].size());
+    }
+
+    for(int i = 0; i < n; i++){
+        char a = txt[i];
+        while(g[current][a] == -1){
+            current = fsm.f[current];
+        }
+        current = g[current][a];
+        //cout << "Current algor" << current << endl;
+        //cout << "O size" << fsm.o[current].size() << endl;
+        for(int j = 0; j < fsm.o[current].size(); j++){
+            occ[fsm.o[current][j]].push_back(i-m[j]+1);
+            //cout << j << " " << i-m[j] +1 << endl;
+        }
+    }
+
+
+    return occ;
+}
+
+vector < vector <int> > ahocorasick(string txt, vector <string> ps, vector <char> alphabet, Out_fail fsm){
+    int n = txt.size();
+    vector <int> m (ps.size());
+    int current = 0;
+    vector < vector <int> > occ (ps.size(), vector <int> (0));
+
+    for(int i = 0; i<ps.size(); i++){
+        m.push_back(ps[i].size());
+    }
+
+    for(int i = 0; i < n; i++){
+        char a = txt[i];
+        while(g[current][a] == -1){
+            current = fsm.f[current];
+        }
+        current = g[current][a];
+        // cout << "Current algor" << current << endl;
+        // cout << "O size" << fsm.o[current].size() << endl;
+        for(int j = 0; j < fsm.o[current].size(); j++){
+            occ[fsm.o[current][j]].push_back(i-m[j]+1);
+            //cout << j << " " << i-m[j] +1 << endl;
+        }
+    }
+
+
+    return occ;
+}
 
 void getPsArray(char* pat, int* psArray) {
 
@@ -37,7 +230,7 @@ void getPsArray(char* pat, int* psArray) {
     }
 }
 
-int kmp(char* pat, char* txt, int cont, bool printLine) {
+int kmp(char* pat, char* txt, int cont) {
     int m = strlen(pat);
     int n = strlen(txt);
 
@@ -45,9 +238,6 @@ int kmp(char* pat, char* txt, int cont, bool printLine) {
     //serve para otimizar os deslocamentos de janelas
     int psArray[m];
     getPsArray(pat, psArray);
-
-    //flag de impressao de linha (se printLine for igual a 0, o algoritmo vai entender que não precisa imprimir a linha)
-    bool linePrinted = !printLine;
 
     int i = 0; //texto
     int j = 0; //padrão
@@ -61,12 +251,6 @@ int kmp(char* pat, char* txt, int cont, bool printLine) {
         if (j == m) { //deu match e está na última posição do padrão
             // add no contador de matches
             cont ++;
-            if(!linePrinted) {
-                //imprime linha
-                cout << txt << "\n";
-                // flag pra não imprimir mesma linha múltiplas vezes em caso de múltiplos matches na mesma linha
-                linePrinted = 1;
-            }
             //j volta pro maior sufixo que é prefixo da posição no momento
             j = psArray[j - 1];
         }
@@ -87,7 +271,7 @@ int kmp(char* pat, char* txt, int cont, bool printLine) {
     return cont;
 }
 
-int sellers(char* pat, char* txt, int cont, int err, bool printLine) {
+int sellers(char* pat, char* txt, int cont, int err) {
 
     int m = strlen(pat);
     int n = strlen(txt);
@@ -102,9 +286,6 @@ int sellers(char* pat, char* txt, int cont, int err, bool printLine) {
     }
     int last = 1;
     int prev = 0;
-
-    //flag de impressao de linha
-    bool linePrinted = !printLine;
 
     for (int j = 0; j < n; j++) {//o for vai percorrer todas as posições do texto, operando sobre cada posição do padrão
 
@@ -125,12 +306,6 @@ int sellers(char* pat, char* txt, int cont, int err, bool printLine) {
         if (D[last][m] <= err) {/* se na última posição da linha atual da matriz o erro for menor que o limiar,
             significa que houve match do padrão com a posição j do texto */
             cont ++;
-            if(!linePrinted) {
-                //imprime linha
-                cout << txt << "\n";
-                // flag pra não imprimir mesma linha múltiplas vezes em caso de múltiplos matches na mesma linha
-                linePrinted = 1;
-            }
         }
         //inverte as linhas para que se opere na outra, olhando pro valor da anterior
         //isso tudo é apenas pra minimizar o custo com espaço de memória e não ser necessária uma matriz (m+1 x n+1)
@@ -140,11 +315,9 @@ int sellers(char* pat, char* txt, int cont, int err, bool printLine) {
     return cont;
 }
 
-int brute (char* pat, char* txt, int cont, bool printLine) {
+int brute (char* pat, char* txt, int cont) {
     int m = strlen(pat);
     int n = strlen(txt);
-
-    bool linePrinted = !printLine;
 
     for (int i = 0; i < n; i++) {
         int match = 0;
@@ -157,12 +330,6 @@ int brute (char* pat, char* txt, int cont, bool printLine) {
             }
             if(match == m) {
                 cont ++;
-                if(!linePrinted) {
-                    //imprime linha
-                    cout << txt << "\n";
-                    // flag pra não imprimir mesma linha múltiplas vezes em caso de múltiplos matches na mesma linha
-                    linePrinted = 1;
-                }
             }
         }
     }
@@ -174,6 +341,17 @@ int brute (char* pat, char* txt, int cont, bool printLine) {
 
 int main(int argc, char** argv) {
 
+    auto start = chrono::steady_clock::now();
+
+    vector <string> mypats;         // padrões
+    vector <char> alphabet;     // alfabeto ASC
+    vector < vector <int> > occ;
+    string pats;
+
+    for(char symbol = 0; symbol < 127; symbol++){
+        alphabet.push_back(symbol);
+    }
+
     // flag de impressão de contagem
     bool printCont = 0;
     // flag de erro
@@ -182,12 +360,13 @@ int main(int argc, char** argv) {
     int cont = 0;
     // flag de impressão de linhas
     bool printLine = 1;
+    // flag de impessão do tempo
+    bool printTime = 0;
 
     // bool para indicar se existe flag de algoritmo
     bool hasAlg = 0;
     char* alg;
 
-    char *pat;
     char *file;
 
     //bool pra indicar que o padrão já foi identificado no comando(padrão sempre vem antes do arquivo)
@@ -201,7 +380,7 @@ int main(int argc, char** argv) {
 
     //marca tudo como zero(para cada argumento de entrada)
     for (int a = 0; a < argc; a++) {
-        markedPos[0] = 0;
+        markedPos[a] = 0;
     }
     //posição 0 é marcada com 1 pois não nos interessa(argv[0] == ./pmt)
     markedPos[0] = 1;
@@ -251,8 +430,7 @@ int main(int argc, char** argv) {
             markedPos[i] = 1;
         }
         if ((strncmp(argv[i],"-t",256) == 0) || (strncmp(argv[i],"--time",256) == 0)) {
-            //implementar
-            cout << "time" << "\n";
+            printTime = 1;
             markedPos[i] = 1;
         }
     }
@@ -261,9 +439,9 @@ int main(int argc, char** argv) {
     // a primeira ocorrência de um argv não-identifcado será o padrão e a segunda será o texto
     for (int j = 0; j < argc; j++) {
         if(markedPos[j] == 0 && (patflag == 0)) {
-            pat = argv[j];
             patflag = 1;
             markedPos[j] = 1;
+            mypats.push_back(argv[j]);
         }
         if((markedPos[j] == 0) && (patflag == 1)) {
             file = argv[j];
@@ -271,68 +449,77 @@ int main(int argc, char** argv) {
         }
     }
 
+    if (patfile == 1) {
+        //abrir arquivo de padrões
+        ifstream patsrc(patpath);
+        while(getline(patsrc, pats)) { //vai checar a linha para cada padrão
+            mypats.push_back(pats);
+        }
+    }
+
+    Out_goto t = build_go_to(mypats, alphabet);
+    Out_fail fsm = build_fsm(mypats, alphabet);
+
     //abrir o arquivo
     ifstream src(file);
-
-
-    string pats;
 
     string line;
     while (getline(src, line)) {// percorre linha por linha
         //converter a linha para char*
         char *txt = &line[0u];
-        if (patfile) {
-            //abrir arquivo de padrões
-            ifstream patsrc(patpath);
-            while(getline(patsrc, pats)) { //vai checar a linha para cada padrão
-                //converter padrão para char*
-                char *newpat = &pats[0u];
-                if(hasAlg) {
-                    if (strncmp(alg,"kmp",256) == 0) {
-                        cont = kmp(newpat, txt, cont, printLine);
-                    }
-                    else if (strncmp(alg,"sel",256) == 0) {
-                        cont = sellers(newpat, txt, cont, err, printLine);
-                    }
-                    else if (strncmp(alg,"brt",256) == 0) {
-                        cont = brute(pat, txt, cont, printLine);
-                    }
-                    else {
-                        cont = sellers(newpat, txt, cont, 0, printLine);
-                    }
-                }
-                else {
-                    cont = sellers(newpat, txt, cont, err, printLine);
-                }
-            }
-        }
+        int prevCont = cont;
 
-        else {
-
+        for (int i = 0; i < mypats.size(); i++) {
+            char *newpat = &mypats[i][0u];
             if(hasAlg) {
                 if (strncmp(alg,"kmp",256) == 0) {
-                    cont = kmp(pat, txt, cont, printLine);
+                    cont = kmp(newpat, txt, cont);
                 }
                 else if (strncmp(alg,"sel",256) == 0) {
-                    cont = sellers(pat, txt, cont, err, printLine);
+                    cont = sellers(newpat, txt, cont, err);
                 }
                 else if (strncmp(alg,"brt",256) == 0) {
-                    cont = brute(pat, txt, cont, printLine);
+                    cont = brute(newpat, txt, cont);
+                }
+                else if (strncmp(alg,"aho",256) == 0) {
+                    occ = ahocorasick(txt, mypats, alphabet, fsm);
+
+                    for(int j = 0; j < occ.size(); j++){
+                        cont += occ[j].size();
+                    }
+
+                    break;
                 }
                 else {
-                    cont = sellers(pat, txt, cont, 0, printLine);
+                    cont = sellers(newpat, txt, cont, err);
                 }
             }
             else {
-                cont = sellers(pat, txt, cont, err, printLine);
+                cont = sellers(newpat, txt, cont, err);
             }
+        }
+
+        if ((cont - prevCont > 0) && printLine) {
+            cout << txt << "\n";
         }
 
     }
 
     if (printCont) {
-        cout << cont << "\n";
+        cout << cont << " occurrences\n";
     }
+    auto end = chrono::steady_clock::now();
+    auto diff = end - start;
+
+    if (printTime) {
+        if (chrono::duration <double, milli> (diff).count() > 1000) {
+            cout << chrono::duration <double> (diff).count() << " s" << endl;
+        }
+        else {
+            cout << chrono::duration <double, milli> (diff).count() << " ms" << endl;
+        }
+    }
+
 
     return 0;
 }
