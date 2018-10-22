@@ -6,12 +6,246 @@ using namespace std;
 #include <fstream>
 #include <vector>
 #include <string>
+#include <tuple>
+#include <set>
 
 #define MAXSTATES 1000
 #define MAXP 100
 #define ASCLEN 127
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define EQ(a,b) ((a) != (b) ? (1) : (0))
 
+int delta[MAXSTATES][ASCLEN];
 int g [MAXSTATES][ASCLEN];
+
+// struct node{
+//     int data;
+//     struct node *n0;
+//     struct node *n1;
+//     struct node *n2;
+//     //vector <node *> children;
+// };
+//
+// struct node* newNode(int data)
+// {
+//   struct node* node = (struct node*)malloc(sizeof(struct node));
+//   node->data = data;
+//
+//   node->n0 = NULL;
+//   node->n1 = NULL;
+//   node->n2 = NULL;
+//   //node->children.push_back(NULL);
+//   //node->children.push_back(NULL);
+//   //node->children.push_back(NULL);
+//   return(node);
+// }
+//
+// int nkids(struct node* node){
+//     int i = 0;
+//     if(node->n0 != NULL) i++;
+//     if(node->n1 != NULL) i++;
+//     if(node->n2 != NULL) i++;
+//
+//     return i;
+// }
+//
+// int tree_find(struct node * root, vector <int> s){
+//     struct node * current = root;
+//     int i = 1;
+//
+//     while( i < s.size()){
+//         int d = s[i]-s[i-1];
+//         //cout << "Index " << i << endl;
+//         //cout << d+1 << " " << "Kids " << nkids(current) <<endl;
+//         if (d+1 < nkids(current)){
+//             if (d+1 == 0 && current->n0 != NULL){
+//                 current = current->n0;
+//             }
+//             else if(d+1 == 1 && current->n1 != NULL){
+//                 current = current->n1;
+//             }
+//             else if(d+1 == 2 && current->n2 != NULL){
+//                 current = current->n2;
+//             }
+//             i++;
+//         }
+//         else{
+//             break;
+//         }
+//     }
+//
+//     if (i == s.size()) return current->data;
+//     else return -1;
+// }
+//
+// void tree_add(struct node * root, vector <int> s, int idx){
+//     struct node * current = root;
+//     int i = 1;
+//     //cout << "Entrou tree add " << idx << endl;
+//     while( i < s.size()){
+//         int d = s[i]-s[i-1];
+//         if (d+1 < nkids(current)){
+//             //cout << "Entrou" << endl;
+//             if (d+1 == 0 && current->n0 != NULL){
+//                 current = current->n0;
+//             }
+//             else if(d+1 == 1 && current->n1 != NULL){
+//                 current = current->n1;
+//             }
+//             else if(d+1 == 2 && current->n2 != NULL){
+//                 current = current->n2;
+//             }
+//             i++;
+//         }
+//         else{
+//             break;
+//         }
+//     }
+//
+//     while(i < s.size()){
+//         //cout << "Index " << i <<endl;
+//         int d = s[i]-s[i-1];
+//         //struct node * novo = newNode(idx);
+//         //cout << "D + 1 " << d+1 << endl;
+//         //cout << "Current " << current->data << endl;
+//         if (d+1 == 0){
+//                 current->n0 = newNode(idx);
+//                 current = current->n0;
+//         }
+//         else if(d+1 == 1){
+//             current->n1 = newNode(idx);
+//             current = current->n1;
+//         }
+//         else if(d+1 == 2){
+//             current->n2 = newNode(idx);
+//             current = current->n2;
+//         }
+//         //cout << "i: " << i << "Len(s): " << s.size() << endl;
+//         //cout << "d " << d << endl;
+//         //cout << "Add ok " << idx << endl;
+//         i++;
+//     }
+// }
+//
+// vector <int> next_column(vector <int> s, string pat, char a, int r){
+//
+//     for(int i = 0; i<s.size(); i++){
+//         //cout << s[i] << " ";
+//     }
+//     //cout << endl;
+//     //cout << pat << endl;
+//     //cout << a << endl;
+//     //cout << r << endl;
+// //----------------------------------------------------------------------------------------
+//     int m = pat.size();
+//     vector <int> t;
+//     for(int i = 0; i<m+1; i++){
+//         t.push_back(0);
+//     }
+//     //cout << t.size() << endl;
+//
+//     for(int i = 1; i < m+1; i++){
+//         int aux;
+//         if(pat[i-1] == a)
+//         //cout << "MIN -> " << s[i]+1 << " " << t[i-1] +1 << " " << s[i-1]+EQ(pat[i-1], a) << " " << r+1 << endl;
+//         int m1 = MIN(s[i]+1, t[i-1] +1);
+//         int m2 = MIN(s[i-1]+EQ(pat[i-1], a), r+1);
+//         int m = MIN(m1, m2);
+//         t[i] = m;
+//     }
+//
+//     /*for(int i = 0; i<t.size(); i++){
+//         cout << t[i] << " ";
+//     }
+//     cout << endl;*/
+//
+//     return t;
+//
+// }
+//
+// struct Out_fsm{
+//     set <int> f;
+//     int idx;
+//
+// };
+//
+// Out_fsm build_ukk_fsm(string pat, vector <char> alphabet, int err){
+//     int m = pat.size();
+//     vector <int> s;
+//     for(int i = 0; i<m+1; i++){
+//         s.push_back(i);
+//     }
+//     vector <tuple <vector <int>, int> > duracell;
+//     tuple <vector <int>, int> aux (s, 0);
+//     //cout << get<0> (aux).size() << endl;
+//     duracell.push_back(aux);
+//     //cout << duracell.size() << endl;
+//     struct node * q = newNode(0);
+//     tree_add(q, s, 0);
+//     //cout << "Chegou " << endl;
+//     set <int> f;
+//     int idx = 0;
+//     memset(delta, -1, sizeof delta);
+//     int first = 0;
+//     //cout << "First " << first << endl;
+//     //cout << "Size " << s.size() << endl;
+//     if(s[s.size()-1] <= err){
+//         f.insert(idx);
+//         //cout << "Inseriu " <<endl;
+//     }
+//     //cout << "Rodou até aqui" << endl;
+//     while(first < duracell.size()){
+//         tuple <vector <int>, int> aux2 = duracell[first];
+//         vector <int> s1 = get<0>(aux2);
+//         int idx_s = get<1>(aux2);
+//         first++;
+//         for(int i = 0; i<alphabet.size(); i++){
+//             vector <int> t = next_column(s, pat, alphabet[i], err);
+//             //break;
+//             //cout << t.size() << endl;
+//             int idx_aux = tree_find(q, t);
+//             //cout <<"IDX " << idx_aux << endl;
+//             if(idx_aux == -1){
+//                 idx++;
+//                 idx_aux = idx;
+//                 tree_add(q, t, idx);
+//                 //cout << idx << " s" << endl;
+//                 tuple <vector <int>, int> aux3 (t, idx_aux);
+//                 duracell.push_back(aux3);
+//
+//                 if(s[s.size()-1] <= err){
+//                    f.insert(idx);
+//                 }
+//             }
+//             delta[idx_s][alphabet[i]] = idx_aux;
+//         }
+//     }
+//
+//     Out_fsm fsm;
+//     fsm.f = f;
+//     fsm.idx = idx;
+//
+//     return fsm;
+// }
+//
+// vector <int> ukk(string txt, string pat, vector <char> alphabet, int err, Out_fsm fsm){
+//     int s = 0;
+//     int n = txt.size();
+//     vector <int> occ;
+//
+//     if(fsm.f.count(s) > 0){
+//         occ.push_back(s);
+//     }
+//
+//     for(int i = 0; i<n; i++){
+//         s = delta[s][txt[i]];
+//         if(fsm.f.count(s) > 0){
+//             occ.push_back(s);
+//         }
+//     }
+//
+//     return occ;
+// }
 
 void print_alphabet(vector <char> alphabet){
     for(int i = 0; i<alphabet.size(); i++){
@@ -384,10 +618,6 @@ int main(int argc, char** argv) {
     vector <string> files;
     string pats;
 
-    for(char symbol = 0; symbol < 127; symbol++){
-        alphabet.push_back(symbol);
-    }
-
     // flag de impressão de contagem
     bool printCont = 0;
     // flag de erro
@@ -493,9 +723,33 @@ int main(int argc, char** argv) {
             mypats.push_back(pats);
         }
     }
+    if(hasAlg == 0) {
+        if(err == 0) {
+            if(mypats.size() > 20) {
+                alg = "aho";
+            }
+            else if ((mypats.size() == 1) && (strlen(&mypats[0][0u]) < 5) ){
+                alg = "brt";
+            }
+            else {
+                alg = "kmp";
+            }
+        }
+        else {
+            alg = "sel";
+        }
+        hasAlg = 1;
+    }
 
-    Out_goto t = build_go_to(mypats, alphabet);
-    Out_fail fsm = build_fsm(mypats, alphabet);
+    Out_goto t;
+    Out_fail fsm;
+    if (strncmp(alg,"aho",256) == 0) {
+        for(char symbol = 0; symbol < 127; symbol++){
+            alphabet.push_back(symbol);
+        }
+        t = build_go_to(mypats, alphabet);
+        fsm = build_fsm(mypats, alphabet);
+    }
     //abrir o arquivo
 
     for (int i = 0; i < files.size(); i++) {
@@ -509,34 +763,41 @@ int main(int argc, char** argv) {
 
             for (int j = 0; j < mypats.size(); j++) {
                 char *newpat = &mypats[j][0u];
-                if(hasAlg) {
-                    if (strncmp(alg,"kmp",256) == 0) {
-                        cont = kmp(newpat, txt, cont);
-                    }
-                    else if (strncmp(alg,"sel",256) == 0) {
-                        cont = sellers(newpat, txt, cont, err);
-                    }
-                    else if (strncmp(alg,"brt",256) == 0) {
-                        cont = brute(newpat, txt, cont);
-                    }
-                    else if (strncmp(alg,"aho",256) == 0) {
-                        txt = treat(txt);
-                        // cout << txt << "\n";
-                        occ = ahocorasick(txt, mypats, alphabet, fsm);
 
-                        for(int k = 0; k < occ.size(); k++){
-                            cont += occ[k].size();
-                        }
-
-                        break;
-                    }
-                    else {
-                        cont = sellers(newpat, txt, cont, err);
-                    }
+                if (strncmp(alg,"kmp",256) == 0) {
+                    cont = kmp(newpat, txt, cont);
                 }
-                else {
+                else if (strncmp(alg,"sel",256) == 0) {
                     cont = sellers(newpat, txt, cont, err);
                 }
+                else if (strncmp(alg,"brt",256) == 0) {
+                    cont = brute(newpat, txt, cont);
+                }
+                // else if (strncmp(alg,"ukk",256) == 0) {
+                //     Out_fsm fsm = build_ukk_fsm(newpat, alphabet, 1);
+                //     // occ = ukk(txt, newpat, alphabet, err, fsm);
+                //
+                //     for(int k = 0; k < occ.size(); k++){
+                //         cont += occ[k].size();
+                //     }
+                // }
+                else if (strncmp(alg,"aho",256) == 0) {
+                    txt = treat(txt);
+                    // cout << txt << "\n";
+                    occ = ahocorasick(txt, mypats, alphabet, fsm);
+
+                    for(int k = 0; k < occ.size(); k++){
+                        cont += occ[k].size();
+                    }
+
+                    break;
+                }
+                else {
+                    cout << "Invalid Algorithm" << "\n";
+                    showhelp();
+                    return 0;
+                }
+
             }
 
             if ((cont - prevCont > 0) && printLine) {

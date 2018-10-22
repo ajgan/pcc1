@@ -46,6 +46,9 @@ A flag -t foi uma opção que a equipe julgou como interessante, mas não estava
 Como citado anteriormente, caso o usuário não informe qual algoritmo ele deseja executar, o programa segue uma heurística obtida através de experimentações.
 A heurística se dá da seguinte forma:
 
-.
-. TO DO
-.
+Para busca exata:
+ - Caso existam mais de 20 padrões para serem pesquisados, é selecionado o Aho-Corasick
+ - Caso seja apenas um padrão de tamanho menor que 5, se usa o Brute Force
+ - De resto, utiliza-se o KMP
+Para busca aproximada:
+ - Seleciona o Sellers(tivemos problemas com o Ukkonen)
